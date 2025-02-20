@@ -134,6 +134,12 @@ A simple project to learn basic Go integration with a PostgreSQL database
 
 ## Command + SQL Queries
 
+### Run project in local
+
+```
+  go run ./cmd
+```
+
 ### Enter postgre command
 
 ```
@@ -232,3 +238,38 @@ A simple project to learn basic Go integration with a PostgreSQL database
 - **`db.ExecContext`**: To run SQL commands that do not produce result rows (such as `INSERT`, `UPDATE`, `DELETE`)
 - **`db.BeginTx`**: To start a transaction. This is useful when you want to run multiple SQL commands as one atomic unit (all or nothing)
 - **`db.PrepareContext`**: To prepare SQL statements that can be executed multiple times with different parameters, which can improve performance
+- **`Repository Pattern`** is a design approach that separates the data access logic from the business logic. It provides an abstraction layer, allowing our application to interact with data sources (like databases) without needing to know the details of how that data is stored or retrieved
+
+```
+structure folders based on repository pattern
+
+our_project
+│
+├── cmd/
+│   └── main.go                  # Entry point of the application
+│
+├── config/
+│   └── config.go                # Configuration loading (e.g., loading .env)
+│
+├── models/
+│   └── user.go                  # User model definition
+│
+├── repository/
+│   ├── user_repository.go       # User repository interface
+│   └── user_repository_impl.go  # Implementation of the user repository
+│
+├── handler/
+│   └── user_handler.go          # HTTP handlers for user-related operations
+│
+├── utils/
+│   └── response.go              # Utility functions for writing JSON responses
+│
+├── migrations/
+│   └── migration_script.sql      # Database migration scripts (if any)
+│
+├── tests/
+│   └── user_handler_test.go      # Unit tests for user handler
+│
+└── go.mod                       # Go module file
+
+```
