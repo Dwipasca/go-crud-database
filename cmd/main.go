@@ -6,8 +6,8 @@ import (
 	"go-crud-database/middleware"
 	"go-crud-database/repository"
 	"net/http"
+	"time"
 )
-
 
 func main() {
 	err := config.LoadEnv(".env")
@@ -24,8 +24,13 @@ func main() {
 	// Create an instance of UserHandler with the repository
 	userHandler := handler.NewUserHandler(userRepo)
 
+	// Initialize the RateLimiter middleware
+	// 10 requests per 5 minutes
+	// 1 request per minute per IP
+	rateLimiter := middleware.NewRateLimiter(10, 5, 1*time.Minute)
+
 	// add middleware to endpoint users
-	http.HandleFunc("/api/v1/users", middleware.ValidateToken(func(w http.ResponseWriter, r *http.Request) {
+	http.Handle("/api/v1/users", rateLimiter.Limit(middleware.ValidateToken(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := r.URL.Query().Get("id")
 
 		switch r.Method {
@@ -42,7 +47,7 @@ func main() {
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
-	}))
+	}))))
 
 	http.HandleFunc("/api/v1/login", userHandler.Authentication)
 

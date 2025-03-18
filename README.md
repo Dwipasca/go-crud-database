@@ -332,6 +332,7 @@ A simple project to learn basic Go integration with a PostgreSQL database
 - **`Repository Pattern`** is a design approach that separates the data access logic from the business logic. It provides an abstraction layer, allowing our application to interact with data sources (like databases) without needing to know the details of how that data is stored or retrieved
 - **`bycrpt`**: is a library that simplifies the process of hashing and verifying passwords, allowing us to implement secure password handling without needing to understand the underlying cryptographic principles in depth
 - **`jwt-go`**: is a library that simplifies the implementation of secure, stateless authentication in our Go applications, providing a flexible and efficient way to manage user sessions.
+- **`rate limit`**: Rate limiting is a best practice for maintaining the integrity, performance, and reliability of web applications and APIs. It protects both the service provider and the users by managing how resources are consumed
 
 ```
 structure folders based on repository pattern
