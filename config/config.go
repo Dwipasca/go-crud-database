@@ -27,7 +27,9 @@ func ConnectToDB() *sql.DB {
 		user_id serial primary key,
         username varchar(50) unique not null,
         email varchar(100) unique not null,
-        created_at timestamp default current_timestamp
+		password varchar(255) not null,
+        created_at timestamp default current_timestamp,
+		update_at timestamp default current_timestamp
 	);`
 
 	_, err = db.Exec(createTableQuery)

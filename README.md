@@ -4,39 +4,64 @@ A simple project to learn basic Go integration with a PostgreSQL database
 
 ## Functional requirment:
 
-- as a user, I can create, update and delete data user
-- as a user, I can see all the data users
-- as a user, I can see detail data user by Id
+- _`user`_
+
+  - as a user, I can login and register
+  - as a member, I can update and delete data user
+  - as a member, I can see all data users
+  - as a member, I can see detail data users by id
 
 ## Third Libs I used
 
 - Postgres : `github.com/lib/pq`
+- crypto : `golang.org/x/crypto` -> to encrypt password
+- jwt : `github.com/dgrijalva/jwt-go` -> token for authorization
 
 ## Endpoint
 
-### Create User
+### Register
 
-- URL : `http://localhost:8080/api/v1/users`
+- URL : `http://localhost:8080/api/v1/register`
 - Method: `POST`
-- request body
-  ```json
-  {
-    "username": "bunbun",
-    "email": "bunbun@gmail.com"
-  }
+- Curl :
   ```
-- response
+  curl --location 'http://localhost:8080/api/v1/register' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+  "username": "member8",
+  "email": "member8@gmail.com",
+  "password": "password"
+  }'
+  ```
+- Response :
   ```json
   {
     "message": "New user created successfully",
     "status": "success",
-    "code": 201,
-    "data": {
-      "userId": 45,
-      "username": "bunbun2",
-      "email": "bunbun@gmail.com",
-      "createdAt": "2025-02-19T17:57:26.729882Z"
-    }
+    "code": 201
+  }
+  ```
+
+### Login
+
+- URL : `http://localhost:8080/api/v1/login`
+- Method: `POST`
+- Curl :
+  ```json
+  curl --location 'http://localhost:8080/api/v1/login' \
+  --header 'Content-Type: application/json' \
+  --data '{
+  "username": "member5",
+  "password": "password"
+  }'
+  ```
+- Response :
+  ```json
+  {
+    "message": "Authentication successful",
+    "status": "success",
+    "code": 200,
+    "data": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyMjYzMjUsImlhdCI6MTc0MjIyNjAyNSwic3ViIjoiMTA3In0.gn4bClELi3FRwk5mTya-BQl6_AEBcUAW7m1aqrP8xak"
   }
   ```
 
@@ -44,37 +69,42 @@ A simple project to learn basic Go integration with a PostgreSQL database
 
 - URL : `http://localhost:8080/api/v1/users`
 - Method: `PUT`
-- request body
-  ```json
-  {
-    "username": "bunbun",
-    "email": "bunbun@gmail.com"
-  }
+- Curl :
   ```
-- response
+  curl --location --request PUT 'http://localhost:8080/api/v1/users' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyODUyMzgsImlhdCI6MTc0MjI4NDkzOCwic3ViIjoiMTA3In0.ZSSuhhF7BsGdfPenvXHmS6ZaWwFisN7xWzBaKAOkx3k' \
+  --data-raw '{
+  "userId": 105,
+  "username": "member56",
+  "email": "member56@gmail.com",
+  "password": "password"
+  }'
+  ```
+- Response :
 
   ```json
   {
     "message": "User updated successfully",
     "status": "success",
-    "code": 200,
-    "data": {
-      "userId": 13,
-      "username": "tadadaadadsadxa",
-      "email": "bunbun_builderzk@sandrock.com",
-      "createdAt": "0001-01-01T00:00:00Z"
-    }
+    "code": 200
   }
   ```
 
 ### Delete User By ID
 
-- URL : `http://localhost:8080/api/v1/users?id=14`
+- URL : `http://localhost:8080/api/v1/users?id=104`
 - Method: `DELETE`
+- Curl :
+  ```
+  curl --location --request DELETE 'http://localhost:8080/api/v1/users?id=105' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyODU0MDUsImlhdCI6MTc0MjI4NTEwNSwic3ViIjoiMTA3In0.zKWh1TiGCtIdC7fXAi_Q0w0Bq8059A68rdXsOqLN1Hc'
+  ```
 - Response
   ```json
   {
-    "message": "Id User 14 deleted successfully",
+    "message": "User deleted successfully",
     "status": "success",
     "code": 200
   }
@@ -84,30 +114,58 @@ A simple project to learn basic Go integration with a PostgreSQL database
 
 - URL : `http://localhost:8080/api/v1/users`
 - Method: `GET`
+- Curl :
+  ```
+  curl --location 'http://localhost:8080/api/v1/users' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyODQ0MjEsImlhdCI6MTc0MjI4NDEyMSwic3ViIjoiMTA3In0.P_RE_SlczIeM75eplTtjuqp3m6JPWDBS3rZ3QHOkQWg'
+  ```
 - Response
   ```json
   {
-    "message": "successfully retrieved data from cache",
+    "message": "Successfully retrieved all users",
     "status": "success",
     "code": 200,
     "data": [
       {
-        "user_id": 6,
-        "username": "grace2",
-        "email": "grace2@sandrock.com",
-        "CreatedAt": "2025-01-22T07:53:02.327409Z"
+        "userId": 106,
+        "username": "member4",
+        "email": "member4@gmail.com",
+        "password": "$2a$10$AtKc3o3YLLNjnp53pQyscO5ApFTujGOAvVdbj.NSAPItEPZGQCgzm",
+        "createdAt": "2025-03-15T15:45:04.808686Z",
+        "updateAt": "2025-03-15T15:45:04.808686Z"
       },
       {
-        "user_id": 10,
-        "username": "user1",
-        "email": "bunbun_builderk@sandrocks.com",
-        "CreatedAt": "2025-01-22T10:25:20.435874Z"
+        "userId": 107,
+        "username": "member5",
+        "email": "member5@gmail.com",
+        "password": "$2a$10$uLKW0v7MQL/eMgpKY/F6jO8facIZ3lZILkWsuVrUaL.YCAfPmFZLa",
+        "createdAt": "2025-03-16T00:09:41.84453Z",
+        "updateAt": "2025-03-16T00:09:41.84453Z"
       },
       {
-        "user_id": 11,
-        "username": "'); truncate users; --",
-        "email": "bunbun_builderzk@sandrock.com",
-        "CreatedAt": "2025-01-22T11:56:14.120701Z"
+        "userId": 108,
+        "username": "member7",
+        "email": "member7@gmail.com",
+        "password": "$2a$10$5.X6F0tvzDwIsmq8Z3IdLeSkuLnPDNKAHyCXDl.Ub6Q03G9lG2v6C",
+        "createdAt": "2025-03-17T22:36:53.310911Z",
+        "updateAt": "2025-03-17T22:36:53.310911Z"
+      },
+      {
+        "userId": 105,
+        "username": "member56",
+        "email": "member55@gmail.com",
+        "password": "$2a$10$XICAYsWjCrZkEsGF5atsmeqjT4tX0VZXNe2KkbB/xGK2r7sEiqj2O",
+        "createdAt": "2025-03-15T15:43:49.217183Z",
+        "updateAt": "2025-03-15T15:43:49.217183Z"
+      },
+      {
+        "userId": 109,
+        "username": "member8",
+        "email": "member8@gmail.com",
+        "password": "$2a$10$Kgxg.4fWCoTawTvq85FTr..0fuP7hjvUQoympeoZ5Pd3azhLl33MO",
+        "createdAt": "2025-03-18T14:48:02.500906Z",
+        "updateAt": "2025-03-18T14:48:02.500906Z"
       }
     ]
   }
@@ -117,17 +175,24 @@ A simple project to learn basic Go integration with a PostgreSQL database
 
 - URL : `http://localhost:8080/api/v1/users?id=16`
 - Method: `GET`
+- Curl :
+  ```
+  curl --location 'http://localhost:8080/api/v1/users?id=105' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyODQ4NjQsImlhdCI6MTc0MjI4NDU2NCwic3ViIjoiMTA3In0.dboxvajzvXwYk6BIXXmfhWz9rqY_ekMOYu1n_6M2myc'
+  ```
 - Response
   ```json
   {
-    "message": "Successfully get detail data",
+    "message": "Successfully retrieved user details",
     "status": "success",
     "code": 200,
     "data": {
-      "userId": 16,
-      "username": "bunbunsh",
-      "email": "bunbun_buxilderh@sandrock.com",
-      "createdAt": "2025-01-22T18:01:00.359879Z"
+      "userId": 105,
+      "username": "member56",
+      "email": "member55@gmail.com",
+      "createdAt": "2025-03-15T15:43:49.217183Z",
+      "updateAt": "2025-03-15T15:43:49.217183Z"
     }
   }
   ```
@@ -175,8 +240,10 @@ A simple project to learn basic Go integration with a PostgreSQL database
     CREATE TABLE users (
         user_id serial primary key,
         username varchar(50) unique not null,
+        password varchar(255) not null,
         email varchar(100) unique not null,
-        created_at timestamp default current_timestamp
+        created_at timestamp default current_timestamp,
+        updated_at timestamp default current_timestamp
     )
 ```
 
@@ -220,12 +287,36 @@ A simple project to learn basic Go integration with a PostgreSQL database
 
 ```
   format:
-    UPDATE users SET username = 'new_username', email = 'new_email@example.com' WHERE user_id = 123;
+    UPDATE [name_table] SET [name_field_1] = [value_field_1], [name_field_2] = [value_field_2] WHERE [name_field] = [value_field];
 ```
 
 ```
   example:
     UPDATE users SET username = 'bunbun', email = 'bunbun@gmail.com' WHERE user_id = 11;
+```
+
+### Delete 1 Data
+
+```
+  format:
+    DELETE from [name_table] where [name_field] = [value_field];
+```
+
+```
+  example:
+    DELETE from users WHERE user_id = 2;
+```
+
+### Delete All Data from table
+
+```
+  format:
+    DELETE from [name_table]
+```
+
+```
+  example:
+    DELETE from users;
 ```
 
 ## Notes
@@ -239,6 +330,8 @@ A simple project to learn basic Go integration with a PostgreSQL database
 - **`db.BeginTx`**: To start a transaction. This is useful when you want to run multiple SQL commands as one atomic unit (all or nothing)
 - **`db.PrepareContext`**: To prepare SQL statements that can be executed multiple times with different parameters, which can improve performance
 - **`Repository Pattern`** is a design approach that separates the data access logic from the business logic. It provides an abstraction layer, allowing our application to interact with data sources (like databases) without needing to know the details of how that data is stored or retrieved
+- **`bycrpt`**: is a library that simplifies the process of hashing and verifying passwords, allowing us to implement secure password handling without needing to understand the underlying cryptographic principles in depth
+- **`jwt-go`**: is a library that simplifies the implementation of secure, stateless authentication in our Go applications, providing a flexible and efficient way to manage user sessions.
 
 ```
 structure folders based on repository pattern
@@ -251,15 +344,18 @@ our_project
 ├── config/
 │   └── config.go                # Configuration loading (e.g., loading .env)
 │
+├── handler/
+│   └── user_handler.go          # HTTP handlers for user-related operations
+│
+├── middleware/
+│   └── jwt.go                   # Check header authorization
+│
 ├── models/
 │   └── user.go                  # User model definition
 │
 ├── repository/
 │   ├── user_repository.go       # User repository interface
 │   └── user_repository_impl.go  # Implementation of the user repository
-│
-├── handler/
-│   └── user_handler.go          # HTTP handlers for user-related operations
 │
 ├── utils/
 │   └── response.go              # Utility functions for writing JSON responses
