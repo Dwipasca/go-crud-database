@@ -9,14 +9,16 @@ type User struct {
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
+	IsAdmin   bool      `json:"isAdmin"`
 	CreatedAt time.Time `json:"createdAt"`
-	UpdateAt  time.Time `json:"updateAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type DetailUser struct {
-	UserId   int       `json:"userId"`
-	Username string    `json:"username"`
-	Email    string    `json:"email"`
+	UserId    int       `json:"userId"`
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	IsAdmin   bool      `json:"isAdmin"`
 	CreatedAt time.Time `json:"createdAt"`
-	UpdateAt  time.Time `json:"updateAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }

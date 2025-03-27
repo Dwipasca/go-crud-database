@@ -17,6 +17,3 @@ type UserRepository interface {
 	CheckUserExists(ctx context.Context, id string) (bool, error)
 	GetUserByUsername(ctx context.Context, username string) (models.User, error)
 }
-
-
-

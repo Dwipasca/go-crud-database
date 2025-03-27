@@ -7,9 +7,14 @@ A simple project to learn basic Go integration with a PostgreSQL database
 - _`user`_
 
   - as a user, I can login and register
-  - as a member, I can update and delete data user
-  - as a member, I can see all data users
-  - as a member, I can see detail data users by id
+
+- _`member & admin`_
+
+  - as a member or admin, I can see detail data user by id
+
+- _`admin`_
+  - as a admin, I can see all data users
+  - as a admin, I can update and delete data user
 
 ## Third Libs I used
 
@@ -73,7 +78,7 @@ A simple project to learn basic Go integration with a PostgreSQL database
   ```
   curl --location --request PUT 'http://localhost:8080/api/v1/users' \
   --header 'Content-Type: application/json' \
-  --header 'Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyODUyMzgsImlhdCI6MTc0MjI4NDkzOCwic3ViIjoiMTA3In0.ZSSuhhF7BsGdfPenvXHmS6ZaWwFisN7xWzBaKAOkx3k' \
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyODUyMzgsImlhdCI6MTc0MjI4NDkzOCwic3ViIjoiMTA3In0.ZSSuhhF7BsGdfPenvXHmS6ZaWwFisN7xWzBaKAOkx3k' \
   --data-raw '{
   "userId": 105,
   "username": "member56",
@@ -99,7 +104,7 @@ A simple project to learn basic Go integration with a PostgreSQL database
   ```
   curl --location --request DELETE 'http://localhost:8080/api/v1/users?id=105' \
   --header 'Content-Type: application/json' \
-  --header 'Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyODU0MDUsImlhdCI6MTc0MjI4NTEwNSwic3ViIjoiMTA3In0.zKWh1TiGCtIdC7fXAi_Q0w0Bq8059A68rdXsOqLN1Hc'
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyODU0MDUsImlhdCI6MTc0MjI4NTEwNSwic3ViIjoiMTA3In0.zKWh1TiGCtIdC7fXAi_Q0w0Bq8059A68rdXsOqLN1Hc'
   ```
 - Response
   ```json
@@ -118,7 +123,7 @@ A simple project to learn basic Go integration with a PostgreSQL database
   ```
   curl --location 'http://localhost:8080/api/v1/users' \
   --header 'Content-Type: application/json' \
-  --header 'Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyODQ0MjEsImlhdCI6MTc0MjI4NDEyMSwic3ViIjoiMTA3In0.P_RE_SlczIeM75eplTtjuqp3m6JPWDBS3rZ3QHOkQWg'
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyODQ0MjEsImlhdCI6MTc0MjI4NDEyMSwic3ViIjoiMTA3In0.P_RE_SlczIeM75eplTtjuqp3m6JPWDBS3rZ3QHOkQWg'
   ```
 - Response
   ```json
@@ -179,7 +184,7 @@ A simple project to learn basic Go integration with a PostgreSQL database
   ```
   curl --location 'http://localhost:8080/api/v1/users?id=105' \
   --header 'Content-Type: application/json' \
-  --header 'Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyODQ4NjQsImlhdCI6MTc0MjI4NDU2NCwic3ViIjoiMTA3In0.dboxvajzvXwYk6BIXXmfhWz9rqY_ekMOYu1n_6M2myc'
+  --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyODQ4NjQsImlhdCI6MTc0MjI4NDU2NCwic3ViIjoiMTA3In0.dboxvajzvXwYk6BIXXmfhWz9rqY_ekMOYu1n_6M2myc'
   ```
 - Response
   ```json
@@ -307,7 +312,7 @@ A simple project to learn basic Go integration with a PostgreSQL database
     DELETE from users WHERE user_id = 2;
 ```
 
-### Delete All Data from table
+### Delete All Data From Table
 
 ```
   format:
@@ -317,6 +322,30 @@ A simple project to learn basic Go integration with a PostgreSQL database
 ```
   example:
     DELETE from users;
+```
+
+### Rename Field In Table
+
+```
+  format:
+    ALTER TABLE [name_table] RENAME [name_field_before] to [name_field_after];
+```
+
+```
+  example:
+    ALTER TABLE users RENAME update_at to updated_at;
+```
+
+### Add New Field In Table
+
+```
+  format:
+    ALTER TABLE [name_table] ADD COLUMN [name_field_new] [type_data];
+```
+
+```
+  example:
+    ALTER TABLE users ADD COLUMN isAdmin boolean default false;
 ```
 
 ## Notes
@@ -350,6 +379,7 @@ our_project
 │
 ├── middleware/
 │   └── jwt.go                   # Check header authorization
+│   └── rate_limiter.go          # set rate limit
 │
 ├── models/
 │   └── user.go                  # User model definition

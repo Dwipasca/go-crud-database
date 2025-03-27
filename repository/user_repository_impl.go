@@ -16,7 +16,7 @@ func NewUserRepository(db *sql.DB) UserRepository {
 
 func (r *userRepositoryImpl) GetAllUser(ctx context.Context) ([]models.User, error) {
 
-	sqlQuery := "SELECT user_id, username, email, password, created_at, updated_at from users"
+	sqlQuery := "SELECT user_id, username, email, password, isAdmin, created_at, updated_at from users"
 	rows, err := r.DB.QueryContext(ctx, sqlQuery)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func (r *userRepositoryImpl) GetAllUser(ctx context.Context) ([]models.User, err
 	var users []models.User
 	for rows.Next() {
 		var user models.User
-		err = rows.Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.CreatedAt, &user.UpdateAt)
+		err = rows.Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.IsAdmin, &user.CreatedAt, &user.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -41,9 +41,9 @@ func (r *userRepositoryImpl) GetAllUser(ctx context.Context) ([]models.User, err
 }
 
 func (r *userRepositoryImpl) GetUserById(ctx context.Context, id string) (models.DetailUser, error) {
-	sqlQuery := "SELECT user_id, username, email, created_at, updated_at from users where user_id = $1"
+	sqlQuery := "SELECT user_id, username, email, isAdmin, created_at, updated_at from users where user_id = $1"
 	var user models.DetailUser
-	err := r.DB.QueryRowContext(ctx, sqlQuery, id).Scan(&user.UserId, &user.Username, &user.Email, &user.CreatedAt, &user.UpdateAt)
+	err := r.DB.QueryRowContext(ctx, sqlQuery, id).Scan(&user.UserId, &user.Username, &user.Email, &user.IsAdmin, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		return models.DetailUser{}, err
 	}
@@ -53,7 +53,7 @@ func (r *userRepositoryImpl) GetUserById(ctx context.Context, id string) (models
 
 func (r *userRepositoryImpl) Authentication(ctx context.Context, username, password string) (bool, error) {
 	sqlQuery := "SELECT EXISTS(SELECT 1 FROM users WHERE username = $1 AND password = $2)"
-	
+
 	var exists bool
 	err := r.DB.QueryRowContext(ctx, sqlQuery, username, password).Scan(&exists)
 	if err != nil {
@@ -63,9 +63,9 @@ func (r *userRepositoryImpl) Authentication(ctx context.Context, username, passw
 	return exists, nil
 }
 
-func (r *userRepositoryImpl) Register(ctx context.Context, user *models.User)  error {
-	sqlQuery := "INSERT INTO users(username, email, password) VALUES ($1, $2, $3)"
-	_, err := r.DB.ExecContext(ctx, sqlQuery, user.Username, user.Email, user.Password)
+func (r *userRepositoryImpl) Register(ctx context.Context, user *models.User) error {
+	sqlQuery := "INSERT INTO users(username, email, password, isAdmin) VALUES ($1, $2, $3, $4)"
+	_, err := r.DB.ExecContext(ctx, sqlQuery, user.Username, user.Email, user.Password, user.IsAdmin)
 	if err != nil {
 		return err
 	}
@@ -74,8 +74,8 @@ func (r *userRepositoryImpl) Register(ctx context.Context, user *models.User)  e
 }
 
 func (r *userRepositoryImpl) UpdateUser(ctx context.Context, user *models.User) error {
-	sqlQuery := "UPDATE users SET username = $1, email = $2 where user_id = $3"
-	_, err := r.DB.ExecContext(ctx, sqlQuery, user.Username, user.Email, user.UserId)
+	sqlQuery := "UPDATE users SET username = $1, email = $2, isAdmin = $3 where user_id = $4"
+	_, err := r.DB.ExecContext(ctx, sqlQuery, user.Username, user.Email, user.IsAdmin, user.UserId)
 	if err != nil {
 		return err
 	}
@@ -129,7 +129,7 @@ func (r *userRepositoryImpl) CheckUserExists(ctx context.Context, id string) (bo
 
 func (r *userRepositoryImpl) GetUserByUsername(ctx context.Context, username string) (models.User, error) {
 	var user models.User
-	query := "SELECT user_id, username, email, password, created_at, updated_at FROM users WHERE username = $1"
-	err := r.DB.QueryRowContext(ctx, query, username).Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.CreatedAt, &user.UpdateAt)
+	query := "SELECT user_id, username, email, password, isAdmin, created_at, updated_at FROM users WHERE username = $1"
+	err := r.DB.QueryRowContext(ctx, query, username).Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.IsAdmin, &user.CreatedAt, &user.UpdatedAt)
 	return user, err
 }

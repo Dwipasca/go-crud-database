@@ -13,9 +13,9 @@ import (
 )
 
 func TestConnectToDB(t *testing.T) {
-   // Set environment variables for testing
+	// Set environment variables for testing
 	os.Setenv("DB_USER", "postgres")
-	os.Setenv("DB_PASSWORD", "postgres")
+	os.Setenv("DB_PASSWORD", "")
 	os.Setenv("DB_NAME", "pokemon")
 	os.Setenv("DB_SSLMODE", "disable")
 
@@ -33,9 +33,9 @@ func TestConnectToDB(t *testing.T) {
 }
 
 func TestGetAllUser(t *testing.T) {
-    // Set environment variables for testing
+	// Set environment variables for testing
 	os.Setenv("DB_USER", "postgres")
-	os.Setenv("DB_PASSWORD", "postgres")
+	os.Setenv("DB_PASSWORD", "")
 	os.Setenv("DB_NAME", "pokemon")
 	os.Setenv("DB_SSLMODE", "disable")
 
@@ -80,4 +80,3 @@ func TestGetAllUser(t *testing.T) {
 		t.Error("handler returned no user data")
 	}
 }
-

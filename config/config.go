@@ -29,7 +29,7 @@ func ConnectToDB() *sql.DB {
         email varchar(100) unique not null,
 		password varchar(255) not null,
         created_at timestamp default current_timestamp,
-		update_at timestamp default current_timestamp
+		updated_at timestamp default current_timestamp
 	);`
 
 	_, err = db.Exec(createTableQuery)
@@ -47,22 +47,22 @@ func ConnectToDB() *sql.DB {
 }
 
 func LoadEnv(filename string) error {
-    file, err := os.Open(filename)
-    if err != nil {
-        return err
-    }
-    defer file.Close()
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
-    scanner := bufio.NewScanner(file)
-    for scanner.Scan() {
-        line := scanner.Text()
-        if strings.TrimSpace(line) != "" && !strings.HasPrefix(line, "#") {
-            parts := strings.SplitN(line, "=", 2)
-            if len(parts) == 2 {
-                os.Setenv(strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1]))
-            }
-        }
-    }
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.TrimSpace(line) != "" && !strings.HasPrefix(line, "#") {
+			parts := strings.SplitN(line, "=", 2)
+			if len(parts) == 2 {
+				os.Setenv(strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1]))
+			}
+		}
+	}
 
-    return scanner.Err()
+	return scanner.Err()
 }
