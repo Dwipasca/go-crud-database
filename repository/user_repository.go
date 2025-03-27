@@ -8,9 +8,9 @@ import (
 type UserRepository interface {
 	GetAllUser(ctx context.Context) ([]models.User, error)
 	GetUserById(ctx context.Context, id string) (models.DetailUser, error)
-	Register(ctx context.Context, user *models.User) error
-	Authentication(ctx context.Context, username, password string) (bool, error)
-	UpdateUser(ctx context.Context, user *models.User) error
+	Register(ctx context.Context, user *models.RegisterRequest) error
+	Authentication(ctx context.Context, user *models.LoginRequest) (bool, error)
+	UpdateUser(ctx context.Context, user *models.UpdateUserRequest) error
 	DeleteUser(ctx context.Context, id string) error
 	CheckUsernameExists(ctx context.Context, username string) (bool, error)
 	CheckEmailExists(ctx context.Context, email string) (bool, error)

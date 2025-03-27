@@ -51,11 +51,11 @@ func (r *userRepositoryImpl) GetUserById(ctx context.Context, id string) (models
 	return user, nil
 }
 
-func (r *userRepositoryImpl) Authentication(ctx context.Context, username, password string) (bool, error) {
+func (r *userRepositoryImpl) Authentication(ctx context.Context, user *models.LoginRequest) (bool, error) {
 	sqlQuery := "SELECT EXISTS(SELECT 1 FROM users WHERE username = $1 AND password = $2)"
 
 	var exists bool
-	err := r.DB.QueryRowContext(ctx, sqlQuery, username, password).Scan(&exists)
+	err := r.DB.QueryRowContext(ctx, sqlQuery, user.Username, user.Password).Scan(&exists)
 	if err != nil {
 		return false, err
 	}
@@ -63,7 +63,7 @@ func (r *userRepositoryImpl) Authentication(ctx context.Context, username, passw
 	return exists, nil
 }
 
-func (r *userRepositoryImpl) Register(ctx context.Context, user *models.User) error {
+func (r *userRepositoryImpl) Register(ctx context.Context, user *models.RegisterRequest) error {
 	sqlQuery := "INSERT INTO users(username, email, password, isAdmin) VALUES ($1, $2, $3, $4)"
 	_, err := r.DB.ExecContext(ctx, sqlQuery, user.Username, user.Email, user.Password, user.IsAdmin)
 	if err != nil {
@@ -73,7 +73,7 @@ func (r *userRepositoryImpl) Register(ctx context.Context, user *models.User) er
 	return nil
 }
 
-func (r *userRepositoryImpl) UpdateUser(ctx context.Context, user *models.User) error {
+func (r *userRepositoryImpl) UpdateUser(ctx context.Context, user *models.UpdateUserRequest) error {
 	sqlQuery := "UPDATE users SET username = $1, email = $2, isAdmin = $3 where user_id = $4"
 	_, err := r.DB.ExecContext(ctx, sqlQuery, user.Username, user.Email, user.IsAdmin, user.UserId)
 	if err != nil {

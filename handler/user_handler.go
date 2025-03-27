@@ -32,9 +32,14 @@ func (h *UserHandler) Authentication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user models.User
+	var user models.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		utils.WriteJson(w, http.StatusBadRequest, "error", nil, "Invalid request payload")
+		return
+	}
+
+	if msg, isValid := utils.ValidateLoginRequest(user); !isValid {
+		utils.WriteJson(w, http.StatusConflict, "error", nil, msg)
 		return
 	}
 
@@ -55,6 +60,11 @@ func (h *UserHandler) Authentication(w http.ResponseWriter, r *http.Request) {
 	// compare the password in the request with the password in the database
 	// if the passwords do not match, return an error message
 	if err := bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(user.Password)); err != nil {
+		utils.WriteJson(w, http.StatusUnauthorized, "error", nil, "Invalid username or password")
+		return
+	}
+
+	if !utils.CheckPassword(storedUser.Password, user.Password) {
 		utils.WriteJson(w, http.StatusUnauthorized, "error", nil, "Invalid username or password")
 		return
 	}
@@ -120,9 +130,14 @@ func (h *UserHandler) UpdateDataUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var updatedUser models.User
+	var updatedUser models.UpdateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&updatedUser); err != nil {
 		utils.WriteJson(w, http.StatusBadRequest, "error", nil, "Invalid request payload")
+		return
+	}
+
+	if msg, isValid := utils.ValidateUpdateUserRequest(updatedUser); !isValid {
+		utils.WriteJson(w, http.StatusConflict, "error", nil, msg)
 		return
 	}
 
@@ -181,10 +196,15 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var newUser models.User
+	var newUser models.RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&newUser); err != nil {
 		log.Println("error decoding request body: ", err)
 		utils.WriteJson(w, http.StatusBadRequest, "error", nil, "Invalid request payload")
+		return
+	}
+
+	if msg, isValid := utils.ValidateRegisterRequest(newUser); !isValid {
+		utils.WriteJson(w, http.StatusConflict, "error", nil, msg)
 		return
 	}
 
@@ -216,25 +236,7 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if username, email, and password in request is empty
-	if newUser.Username == "" {
-		utils.WriteJson(w, http.StatusConflict, "error", nil, "Username cannot be empty")
-		return
-	}
-
-	if newUser.Email == "" {
-		utils.WriteJson(w, http.StatusConflict, "error", nil, "Email cannot be empty")
-		return
-	}
-
-	if newUser.Password == "" {
-		utils.WriteJson(w, http.StatusConflict, "error", nil, "Password cannot be empty")
-		return
-	}
-
-	// before we hash the password, we need to convert it to a byte slice
-	// because the bcrypt.GenerateFromPassword function only accepts a byte slice
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), bcrypt.DefaultCost)
+	passwordHash, err := utils.EncryptPassword(newUser.Password)
 	if err != nil {
 		log.Println("error hashing password: ", err)
 		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Internal Server Error")
