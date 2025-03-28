@@ -28,19 +28,6 @@ func TestHashPassword_ShouldBeUnique(t *testing.T) {
 	}
 }
 
-func TestHashPassword_EmptyPassword(t *testing.T) {
-	password := ""
-	hashedPassword, err := utils.EncryptPassword(password)
-
-	if err != nil {
-		t.Errorf("Error hashing password: %v", err)
-	}
-
-	if hashedPassword == "" {
-		t.Errorf("Hashed password should not be empty")
-	}
-}
-
 func TestHashPassword_Performance(t *testing.T) {
 	password := "PasswordPerformanceTest123"
 

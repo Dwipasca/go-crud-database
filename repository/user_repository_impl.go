@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"go-crud-database/models"
+	"go-crud-database/utils"
 )
 
 type userRepositoryImpl struct {
@@ -52,13 +53,15 @@ func (r *userRepositoryImpl) GetUserById(ctx context.Context, id string) (models
 }
 
 func (r *userRepositoryImpl) Authentication(ctx context.Context, user *models.LoginRequest) (bool, error) {
-	sqlQuery := "SELECT EXISTS(SELECT 1 FROM users WHERE username = $1 AND password = $2)"
+	sqlQuery := "SELECT password FROM users WHERE username = $1"
 
-	var exists bool
-	err := r.DB.QueryRowContext(ctx, sqlQuery, user.Username, user.Password).Scan(&exists)
+	var hashedPassword string
+	err := r.DB.QueryRowContext(ctx, sqlQuery, user.Username).Scan(&hashedPassword)
 	if err != nil {
 		return false, err
 	}
+
+	exists := utils.CheckPassword(hashedPassword, user.Password)
 
 	return exists, nil
 }

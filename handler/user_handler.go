@@ -9,11 +9,11 @@ import (
 	"go-crud-database/utils"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserHandler struct {
@@ -24,7 +24,7 @@ func NewUserHandler(repo repository.UserRepository) *UserHandler {
 	return &UserHandler{repo: repo}
 }
 
-var jwtKey = []byte("my_secret_key")
+var jwtKey = []byte(os.Getenv("JWT_SECRET"))
 
 func (h *UserHandler) Authentication(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -54,13 +54,6 @@ func (h *UserHandler) Authentication(w http.ResponseWriter, r *http.Request) {
 		// if the error is not sql.ErrNoRows, return an internal server error message
 		log.Println("error getting user by username: ", err)
 		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Internal Server Error")
-		return
-	}
-
-	// compare the password in the request with the password in the database
-	// if the passwords do not match, return an error message
-	if err := bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(user.Password)); err != nil {
-		utils.WriteJson(w, http.StatusUnauthorized, "error", nil, "Invalid username or password")
 		return
 	}
 
@@ -96,8 +89,8 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check role user
-	isAdmin := r.Context().Value("isAdmin").(bool)
-	if !isAdmin {
+	isAdmin, ok := r.Context().Value("isAdmin").(bool)
+	if !ok || !isAdmin {
 		utils.WriteJson(w, http.StatusUnauthorized, "error", nil, "Unauthorized only admin can access")
 		return
 	}
@@ -124,8 +117,8 @@ func (h *UserHandler) UpdateDataUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check role user
-	isAdmin := r.Context().Value("isAdmin").(bool)
-	if !isAdmin {
+	isAdmin, ok := r.Context().Value("isAdmin").(bool)
+	if !ok || !isAdmin {
 		utils.WriteJson(w, http.StatusUnauthorized, "error", nil, "Unauthorized only admin can access")
 		return
 	}
@@ -263,8 +256,8 @@ func (h *UserHandler) DeleteDataUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check role user
-	isAdmin := r.Context().Value("isAdmin").(bool)
-	if !isAdmin {
+	isAdmin, ok := r.Context().Value("isAdmin").(bool)
+	if !ok || !isAdmin {
 		utils.WriteJson(w, http.StatusUnauthorized, "error", nil, "Unauthorized only admin can access")
 		return
 	}
