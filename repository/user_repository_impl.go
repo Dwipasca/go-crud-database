@@ -66,9 +66,10 @@ func (r *userRepositoryImpl) Authentication(ctx context.Context, user *models.Lo
 	return exists, nil
 }
 
-func (r *userRepositoryImpl) Register(ctx context.Context, user *models.RegisterRequest) error {
+func (r *userRepositoryImpl) Register(ctx context.Context, tx *sql.Tx, user *models.RegisterRequest) error {
 	sqlQuery := "INSERT INTO users(username, email, password, isAdmin) VALUES ($1, $2, $3, $4)"
-	_, err := r.DB.ExecContext(ctx, sqlQuery, user.Username, user.Email, user.Password, user.IsAdmin)
+
+	_, err := tx.ExecContext(ctx, sqlQuery, user.Username, user.Email, user.Password, user.IsAdmin)
 	if err != nil {
 		return err
 	}
@@ -76,9 +77,10 @@ func (r *userRepositoryImpl) Register(ctx context.Context, user *models.Register
 	return nil
 }
 
-func (r *userRepositoryImpl) UpdateUser(ctx context.Context, user *models.UpdateUserRequest) error {
+func (r *userRepositoryImpl) UpdateUser(ctx context.Context, tx *sql.Tx, user *models.UpdateUserRequest) error {
 	sqlQuery := "UPDATE users SET username = $1, email = $2, isAdmin = $3 where user_id = $4"
-	_, err := r.DB.ExecContext(ctx, sqlQuery, user.Username, user.Email, user.IsAdmin, user.UserId)
+
+	_, err := tx.ExecContext(ctx, sqlQuery, user.Username, user.Email, user.IsAdmin, user.UserId)
 	if err != nil {
 		return err
 	}
@@ -86,9 +88,10 @@ func (r *userRepositoryImpl) UpdateUser(ctx context.Context, user *models.Update
 	return nil
 }
 
-func (r *userRepositoryImpl) DeleteUser(ctx context.Context, id string) error {
+func (r *userRepositoryImpl) DeleteUser(ctx context.Context, tx *sql.Tx, id string) error {
 	sqlQuery := "DELETE FROM users where user_id = $1"
-	_, err := r.DB.ExecContext(ctx, sqlQuery, id)
+	
+	_, err := tx.ExecContext(ctx, sqlQuery, id)
 	if err != nil {
 		return err
 	}

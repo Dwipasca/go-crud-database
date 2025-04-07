@@ -18,10 +18,11 @@ import (
 
 type UserHandler struct {
 	repo repository.UserRepository
+	db  *sql.DB
 }
 
-func NewUserHandler(repo repository.UserRepository) *UserHandler {
-	return &UserHandler{repo: repo}
+func NewUserHandler(repo repository.UserRepository, db *sql.DB) *UserHandler {
+	return &UserHandler{repo: repo, db: db}
 }
 
 var jwtKey = []byte(os.Getenv("JWT_SECRET"))
@@ -95,7 +96,11 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := context.Background()
+	// create a context with a timeout
+	// this will cancel the request if it takes longer than 5 seconds
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
 	users, err := h.repo.GetAllUser(ctx)
 	if err != nil {
 		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Internal Server Error")
@@ -134,7 +139,14 @@ func (h *UserHandler) UpdateDataUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := context.Background()
+	ctx := r.Context()
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println("error starting transaction: ", err)
+		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Failed to start transaction")
+		return
+	}
+	defer tx.Rollback()
 
 	if updatedUser.UserId == 0 {
 		utils.WriteJson(w, http.StatusBadRequest, "error", nil, "Missing user ID")
@@ -172,12 +184,17 @@ func (h *UserHandler) UpdateDataUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Proceed with the update
-	err = h.repo.UpdateUser(ctx, &updatedUser)
+	err = h.repo.UpdateUser(ctx, tx, &updatedUser)
 	if err != nil {
 		log.Printf("Error updating user with ID %d: %v", updatedUser.UserId, err)
 		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "update error")
 		return
 	}
+
+	if err := tx.Commit(); err != nil {
+        http.Error(w, "Failed to commit transaction", http.StatusInternalServerError)
+        return
+    }
 
 	utils.WriteJson(w, http.StatusOK, "success", nil, "User updated successfully")
 
@@ -201,7 +218,14 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := context.Background()
+	ctx := r.Context()
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println("error starting transaction: ", err)
+		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Failed to start transaction")
+		return
+	}
+	defer tx.Rollback()
 
 	// Check if username already exists
 	usernameExists, err := h.repo.CheckUsernameExists(ctx, newUser.Username)
@@ -239,12 +263,18 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	// convert the byte slice to a string
 	newUser.Password = string(passwordHash)
 
-	err = h.repo.Register(ctx, &newUser)
+	err = h.repo.Register(ctx, tx, &newUser)
 	if err != nil {
 		log.Println("error creating new user: ", err)
 		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Internal Server Error")
 		return
 	}
+
+	// tx.Commit() will be called only if no errors occurred
+    if err := tx.Commit(); err != nil {
+        http.Error(w, "Failed to commit transaction", http.StatusInternalServerError)
+        return
+    }
 
 	utils.WriteJson(w, http.StatusCreated, "success", nil, "New user created successfully")
 }
@@ -268,7 +298,14 @@ func (h *UserHandler) DeleteDataUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := context.Background()
+	ctx := r.Context()
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println("error starting transaction: ", err)
+		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Failed to start transaction")
+		return
+	}
+	defer tx.Rollback()
 
 	// Check if the user exists
 	userIdExists, err := h.repo.CheckUserExists(ctx, id)
@@ -282,12 +319,17 @@ func (h *UserHandler) DeleteDataUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.repo.DeleteUser(ctx, id)
+	err = h.repo.DeleteUser(ctx, tx, id)
 	if err != nil {
 		log.Printf("Error deleting user with ID %s: %v", id, err)
 		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Internal Server Error during deletion")
 		return
 	}
+
+	if err := tx.Commit(); err != nil {
+        http.Error(w, "Failed to commit transaction", http.StatusInternalServerError)
+        return
+    }
 
 	utils.WriteJson(w, http.StatusOK, "success", nil, "User deleted successfully")
 }
@@ -304,7 +346,9 @@ func (h *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
 	user, err := h.repo.GetUserById(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {

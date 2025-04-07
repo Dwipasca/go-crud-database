@@ -22,7 +22,7 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 
 	// Create an instance of UserHandler with the repository
-	userHandler := handler.NewUserHandler(userRepo)
+	userHandler := handler.NewUserHandler(userRepo, db)
 
 	// Initialize the RateLimiter middleware
 	// 10 requests per 5 minutes
