@@ -16,5 +16,5 @@ type UserRepository interface {
 	CheckUsernameExists(ctx context.Context, username string) (bool, error)
 	CheckEmailExists(ctx context.Context, email string) (bool, error)
 	CheckUserExists(ctx context.Context, id string) (bool, error)
-	GetUserByUsername(ctx context.Context, username string) (models.User, error)
+	GetUserByUsername(ctx context.Context, tx *sql.Tx, username string) (models.User, error)
 }

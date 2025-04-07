@@ -44,8 +44,16 @@ func (h *UserHandler) Authentication(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := context.Background()
-	storedUser, err := h.repo.GetUserByUsername(ctx, user.Username)
+	ctx := r.Context()
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println("error starting transaction: ", err)
+		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Failed to start transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	storedUser, err := h.repo.GetUserByUsername(ctx, tx, user.Username)
 	if err != nil {
 		// if the user is not found, return an error message
 		if err == sql.ErrNoRows {
@@ -79,6 +87,11 @@ func (h *UserHandler) Authentication(w http.ResponseWriter, r *http.Request) {
 		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Internal Server Error")
 		return
 	}
+
+	if err := tx.Commit(); err != nil {
+        http.Error(w, "Failed to commit transaction", http.StatusInternalServerError)
+        return
+    }
 
 	utils.WriteJson(w, http.StatusOK, "success", tokenString, "Authentication successful")
 }

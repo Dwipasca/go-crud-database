@@ -133,9 +133,17 @@ func (r *userRepositoryImpl) CheckUserExists(ctx context.Context, id string) (bo
 	return userIdExists, nil
 }
 
-func (r *userRepositoryImpl) GetUserByUsername(ctx context.Context, username string) (models.User, error) {
-	var user models.User
+func (r *userRepositoryImpl) GetUserByUsername(ctx context.Context, tx *sql.Tx, username string) (models.User, error) {
 	query := "SELECT user_id, username, email, password, isAdmin, created_at, updated_at FROM users WHERE username = $1"
-	err := r.DB.QueryRowContext(ctx, query, username).Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.IsAdmin, &user.CreatedAt, &user.UpdatedAt)
+	
+	var user models.User
+	var row *sql.Row
+	if tx != nil {
+		row = tx.QueryRowContext(ctx, query, username)
+	} else {
+		row = r.DB.QueryRowContext(ctx, query, username)
+	}
+
+	err := row.Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.IsAdmin, &user.CreatedAt, &user.UpdatedAt)
 	return user, err
 }
