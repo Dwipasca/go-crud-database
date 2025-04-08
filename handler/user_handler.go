@@ -114,7 +114,20 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
-	users, err := h.repo.GetAllUser(ctx)
+	queryString := r.URL.Query()
+
+	page, _ := strconv.Atoi(queryString.Get("page"))
+	if page < 1 {
+		page = 1
+	}
+	limit, _ := strconv.Atoi(queryString.Get("limit"))
+	if limit < 1 {
+		limit = 10
+	}
+
+	offset := (page - 1) * limit
+
+	users, err := h.repo.GetAllUser(ctx, limit, offset)
 	if err != nil {
 		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Internal Server Error")
 		return
@@ -125,7 +138,30 @@ func (h *UserHandler) GetAllUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJson(w, http.StatusOK, "success", users, "Successfully retrieved all users")
+	total, err := h.repo.CountUser(ctx)
+	if err != nil {
+		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Internal Server Error")
+		return
+	}
+	
+	totalPage := (total + limit - 1) / limit
+
+	response := models.PaginatedResponse[models.User]{
+		Message:    "success",
+		Status:     "success",
+		Code:       http.StatusOK,
+		Data:       users,
+		Pagination: models.PaginationMeta{
+			CurrentPage: page, 
+			Limit: limit, 
+			TotalItems: total, 
+			TotalPage: totalPage,
+		},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+
 }
 
 func (h *UserHandler) UpdateDataUser(w http.ResponseWriter, r *http.Request) {

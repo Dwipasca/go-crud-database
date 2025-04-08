@@ -15,10 +15,11 @@ func NewUserRepository(db *sql.DB) UserRepository {
 	return &userRepositoryImpl{DB: db}
 }
 
-func (r *userRepositoryImpl) GetAllUser(ctx context.Context) ([]models.User, error) {
+func (r *userRepositoryImpl) GetAllUser(ctx context.Context, limit, offset int) ([]models.User, error) {
 
-	sqlQuery := "SELECT user_id, username, email, password, isAdmin, created_at, updated_at from users"
-	rows, err := r.DB.QueryContext(ctx, sqlQuery)
+	sqlQuery := "SELECT user_id, username, email, password, isAdmin, created_at, updated_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2"
+
+	rows, err := r.DB.QueryContext(ctx, sqlQuery, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -153,3 +154,16 @@ func (r *userRepositoryImpl) GetUserByUsername(ctx context.Context, tx *sql.Tx, 
 	err := row.Scan(&user.UserId, &user.Username, &user.Email, &user.Password, &user.IsAdmin, &user.CreatedAt, &user.UpdatedAt)
 	return user, err
 }
+
+func (r *userRepositoryImpl) CountUser(ctx context.Context) (int, error) {
+	sqlQuery := "SELECT COUNT(*) FROM users"
+
+	var count int
+	err := r.DB.QueryRowContext(ctx, sqlQuery).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+

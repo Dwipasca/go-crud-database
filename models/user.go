@@ -42,3 +42,18 @@ type UpdateUserRequest struct {
 	Password string `json:"password"`
 	IsAdmin  bool   `json:"isAdmin"`
 }
+
+type PaginationMeta struct {
+	CurrentPage int `json:"currentPage"`
+	Limit 	 	int `json:"limit"`
+	TotalItems 	int `json:"totalItems"`
+	TotalPage   int `json:"totalPage"`
+}
+
+type PaginatedResponse[T any] struct {
+	Message 	string      	`json:"message"`
+	Status  	string      	`json:"status"`
+	Code    	int         	`json:"code"`
+	Data    	interface{} 	`json:"data,omitempty"`
+	Pagination 	PaginationMeta 	`json:"pagination,omitempty"`
+}

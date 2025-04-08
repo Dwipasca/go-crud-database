@@ -51,13 +51,14 @@ func TestConnectToDB(t *testing.T) {
 func TestGetAllUser(t *testing.T) {
 	// Buat context kosong, bisa diganti kalau handler punya context tambahan
 	ctx := context.Background()
-
-	users, err := userRepo.GetAllUser(ctx)
+	limit := 1
+	offset := 0
+	
+	users, err := userRepo.GetAllUser(ctx, limit, offset)
 	if err != nil {
 		t.Fatalf("Failed to get users: %v", err)
 	}
 
-	// Contoh verifikasi: pastikan slice tidak nil (jumlah bisa kosong tergantung data)
 	if users == nil {
 		t.Error("Expected users slice, got nil")
 	}
