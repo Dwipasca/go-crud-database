@@ -8,6 +8,7 @@ import (
 	"go-crud-database/repository"
 	"log"
 	"os"
+	"strconv"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -96,3 +97,57 @@ func TestRegisterAndGetUserByUsername(t *testing.T) {
 	}
 }
 
+func TestUpdateAndGetUserById(t *testing.T) {
+	ctx := context.Background()
+
+	tx, err := testDB.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatalf("Failed to begin transaction: %v", err)
+	}
+	defer tx.Rollback()
+
+	newUser := &models.RegisterRequest{
+		Username: "testuser_integration",
+		Email:    "testuser_integration@example.com",
+		Password: "hashedpassword",
+		IsAdmin:  false,
+	}
+
+	txRepo := repository.NewUserRepository(testDB)
+
+	// create a new user
+	err = txRepo.Register(ctx, tx, newUser)
+	if err != nil {
+		t.Fatalf("Failed to register user in TX: %v", err)
+	}
+
+	// get data user by username
+	user, err := txRepo.GetUserByUsername(ctx, tx, newUser.Username)
+	if err != nil {
+		t.Fatalf("Failed to get user by username in TX: %v", err)
+	}
+
+	updateUser := &models.UpdateUserRequest{
+		UserId:   user.UserId,
+		Username: "updateduser_integration",
+		Email: "updateuser_integration",
+		IsAdmin:  true,
+	}
+
+	// Update user
+	err = txRepo.UpdateUser(ctx, tx, updateUser)
+	if err != nil {
+		t.Fatalf("Failed to update user in TX: %v", err)
+	}
+
+	// Get user by ID
+	detailUser, err := txRepo.GetUserById(ctx, tx, strconv.Itoa(user.UserId))
+	if err != nil {
+		t.Fatalf("Failed to get user by ID in TX: %v", err)
+	}
+
+	// check if the updated user data is correct
+	if detailUser.Username != updateUser.Username {
+		t.Errorf("Expected username %s, got %s", updateUser.Username, detailUser.Username)
+	}
+}

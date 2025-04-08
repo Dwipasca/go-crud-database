@@ -41,15 +41,21 @@ func (r *userRepositoryImpl) GetAllUser(ctx context.Context) ([]models.User, err
 	return users, nil
 }
 
-func (r *userRepositoryImpl) GetUserById(ctx context.Context, id string) (models.DetailUser, error) {
+func (r *userRepositoryImpl) GetUserById(ctx context.Context, tx *sql.Tx, id string) (models.DetailUser, error) {
 	sqlQuery := "SELECT user_id, username, email, isAdmin, created_at, updated_at from users where user_id = $1"
+	
 	var user models.DetailUser
-	err := r.DB.QueryRowContext(ctx, sqlQuery, id).Scan(&user.UserId, &user.Username, &user.Email, &user.IsAdmin, &user.CreatedAt, &user.UpdatedAt)
-	if err != nil {
-		return models.DetailUser{}, err
+	var row *sql.Row
+
+	if tx != nil {
+		row = tx.QueryRowContext(ctx, sqlQuery, id)
+	} else {
+		row = r.DB.QueryRowContext(ctx, sqlQuery, id)
 	}
 
-	return user, nil
+	err := row.Scan(&user.UserId, &user.Username, &user.Email, &user.IsAdmin, &user.CreatedAt, &user.UpdatedAt)
+	
+	return user, err
 }
 
 func (r *userRepositoryImpl) Authentication(ctx context.Context, user *models.LoginRequest) (bool, error) {

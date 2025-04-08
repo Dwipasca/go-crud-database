@@ -167,7 +167,7 @@ func (h *UserHandler) UpdateDataUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if the user exists
-	detailUser, err := h.repo.GetUserById(ctx, strconv.Itoa(updatedUser.UserId))
+	detailUser, err := h.repo.GetUserById(ctx, tx, strconv.Itoa(updatedUser.UserId))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			utils.WriteJson(w, http.StatusNotFound, "error", nil, "User not found")
@@ -359,16 +359,31 @@ func (h *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
-	user, err := h.repo.GetUserById(ctx, id)
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Println("error starting transaction: ", err)
+		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Failed to start transaction")
+		return
+	}
+	defer tx.Rollback()
+
+	user, err := h.repo.GetUserById(ctx, tx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			utils.WriteJson(w, http.StatusNotFound, "error", nil, "User not found")
 			return
 		}
 		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Internal Server Error")
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Println("commit error:", err)
+		utils.WriteJson(w, http.StatusInternalServerError, "error", nil, "Failed to commit transaction")
 		return
 	}
 

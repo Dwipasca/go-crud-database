@@ -8,7 +8,7 @@ import (
 
 type UserRepository interface {
 	GetAllUser(ctx context.Context) ([]models.User, error)
-	GetUserById(ctx context.Context, id string) (models.DetailUser, error)
+	GetUserById(ctx context.Context, tx *sql.Tx, id string) (models.DetailUser, error)
 	Register(ctx context.Context, tx *sql.Tx, user *models.RegisterRequest) error
 	Authentication(ctx context.Context, user *models.LoginRequest) (bool, error)
 	UpdateUser(ctx context.Context, tx *sql.Tx, user *models.UpdateUserRequest) error
