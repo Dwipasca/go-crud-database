@@ -7,7 +7,7 @@ import (
 )
 
 func TestHashPassword_NormalPassword(t *testing.T) {
-	password := "password"
+	password := "admin"
 	hashedPassword, err := utils.EncryptPassword(password)
 	if err != nil {
 		t.Errorf("Error hashing password: %v", err)

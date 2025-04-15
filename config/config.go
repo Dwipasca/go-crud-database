@@ -12,7 +12,9 @@ import (
 )
 
 func ConnectToDB() *sql.DB {
-	connStr := "user=" + os.Getenv("DB_USER") + " password=" + os.Getenv("DB_PASSWORD") + " dbname=" + os.Getenv("DB_NAME") + " sslmode=" + os.Getenv("DB_SSLMODE")
+
+	connStr := "user=" + os.Getenv("DB_USER") + " password=" + os.Getenv("DB_PASSWORD") + " dbname=" + os.Getenv("DB_NAME") + " sslmode=" + os.Getenv("DB_SSLMODE") + " host=" + os.Getenv("DB_HOST") + " port=" + os.Getenv("DB_PORT")
+
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		panic(err)
@@ -28,6 +30,7 @@ func ConnectToDB() *sql.DB {
         username varchar(50) unique not null,
         email varchar(100) unique not null,
 		password varchar(255) not null,
+		is_admin boolean default false,
         created_at timestamp default current_timestamp,
 		updated_at timestamp default current_timestamp
 	);`

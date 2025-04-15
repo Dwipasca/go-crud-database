@@ -19,6 +19,8 @@ var userRepo repository.UserRepository
 
 func TestMain(m *testing.M) {
 	// Set environment variables for test DB
+	os.Setenv("DB_HOST", "localhost")
+	os.Setenv("DB_PORT", "5432")
 	os.Setenv("DB_USER", "postgres")
 	os.Setenv("DB_PASSWORD", "")
 	os.Setenv("DB_NAME", "users_test")

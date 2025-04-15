@@ -17,7 +17,7 @@ func NewUserRepository(db *sql.DB) UserRepository {
 
 func (r *userRepositoryImpl) GetAllUser(ctx context.Context, limit, offset int) ([]models.User, error) {
 
-	sqlQuery := "SELECT user_id, username, email, password, isAdmin, created_at, updated_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2"
+	sqlQuery := "SELECT user_id, username, email, password, is_admin, created_at, updated_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2"
 
 	rows, err := r.DB.QueryContext(ctx, sqlQuery, limit, offset)
 	if err != nil {
@@ -43,7 +43,7 @@ func (r *userRepositoryImpl) GetAllUser(ctx context.Context, limit, offset int) 
 }
 
 func (r *userRepositoryImpl) GetUserById(ctx context.Context, tx *sql.Tx, id string) (models.DetailUser, error) {
-	sqlQuery := "SELECT user_id, username, email, isAdmin, created_at, updated_at from users where user_id = $1"
+	sqlQuery := "SELECT user_id, username, email, is_admin, created_at, updated_at from users where user_id = $1"
 	
 	var user models.DetailUser
 	var row *sql.Row
@@ -74,7 +74,7 @@ func (r *userRepositoryImpl) Authentication(ctx context.Context, user *models.Lo
 }
 
 func (r *userRepositoryImpl) Register(ctx context.Context, tx *sql.Tx, user *models.RegisterRequest) error {
-	sqlQuery := "INSERT INTO users(username, email, password, isAdmin) VALUES ($1, $2, $3, $4)"
+	sqlQuery := "INSERT INTO users(username, email, password, is_admin) VALUES ($1, $2, $3, $4)"
 
 	_, err := tx.ExecContext(ctx, sqlQuery, user.Username, user.Email, user.Password, user.IsAdmin)
 	if err != nil {
@@ -85,7 +85,7 @@ func (r *userRepositoryImpl) Register(ctx context.Context, tx *sql.Tx, user *mod
 }
 
 func (r *userRepositoryImpl) UpdateUser(ctx context.Context, tx *sql.Tx, user *models.UpdateUserRequest) error {
-	sqlQuery := "UPDATE users SET username = $1, email = $2, isAdmin = $3 where user_id = $4"
+	sqlQuery := "UPDATE users SET username = $1, email = $2, is_admin = $3 where user_id = $4"
 
 	_, err := tx.ExecContext(ctx, sqlQuery, user.Username, user.Email, user.IsAdmin, user.UserId)
 	if err != nil {
@@ -141,7 +141,7 @@ func (r *userRepositoryImpl) CheckUserExists(ctx context.Context, id string) (bo
 }
 
 func (r *userRepositoryImpl) GetUserByUsername(ctx context.Context, tx *sql.Tx, username string) (models.User, error) {
-	query := "SELECT user_id, username, email, password, isAdmin, created_at, updated_at FROM users WHERE username = $1"
+	query := "SELECT user_id, username, email, password, is_admin, created_at, updated_at FROM users WHERE username = $1"
 	
 	var user models.User
 	var row *sql.Row
@@ -166,4 +166,3 @@ func (r *userRepositoryImpl) CountUser(ctx context.Context) (int, error) {
 
 	return count, nil
 }
-

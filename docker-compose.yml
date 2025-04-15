@@ -1,0 +1,30 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=secret
+      - DB_NAME=go_crud_db
+    env_file:
+      - .env
+
+  db:
+    image: postgres:15
+    container_name: go-crud-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: go_crud_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./migrations/init-dummy.sql:/docker-entrypoint-initdb.d/init-dummy.sql
+
+volumes:
+  db_data:

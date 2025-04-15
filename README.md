@@ -1,26 +1,81 @@
 # GO-CRUD-DATABASE
 
-A simple project to learn basic Go integration with a PostgreSQL database
+A simple RESTful API built with Golang and PostgreSQL, implementing the Repository Pattern, JWT-based authentication, role-based access control, and basic security features.
 
-## Functional requirment:
+---
 
-- _`user`_
+## 🚀 Features
 
-  - as a user, I can login and register
+- **Clean Architecture**: Implements the Repository Pattern for separation of concerns.
+- **User Management**: Full CRUD operations for user entities.
+- **Authentication**: JWT-based authentication using `jwt-go`.
+- **Authorization**: Role-based access control (Admin & Member).
+- **Security**:
+  - Password hashing with `bcrypt`.
+  - Basic rate limiting to prevent abuse.
+- **Pagination**: Supports pagination for user listings.
+- **Input Validation**: Validates inputs for registration, login, and updates.
+- **Testing**: Includes unit and integration tests with transaction rollbacks.
 
-- _`member & admin`_
+---
 
-  - as a member or admin, I can see detail data user by id
+## 📘 Functional Requirements
 
-- _`admin`_
-  - as a admin, I can see all data users
-  - as a admin, I can update and delete data user
+### 1. Authentication & Authorization
 
-## Third Libs I used
+- **Register**: Users can register with a username, email, and password.
+- **Login**: Authenticated users receive a JWT token.
+- **Password Hashing**: User passwords are securely hashed using `bcrypt`.
+- **JWT Verification**: Protected routes require a valid JWT.
+- **Role-Based Access**:
+  - **Admin**:
+    - View all users: `GET /users`
+    - View user detail: `GET /users/{id}`
+    - Update user: `PUT /users`
+    - Delete user: `DELETE /users/{id}`
+  - **Member**:
+    - View own details only: `GET /users/{id}`
+
+### 2. User Management (CRUD)
+
+- **Create User**: `POST /register`
+- **Login User**: `POST /login`
+- **Get All Users**: `GET /users` **(Admin only)**
+- **Get User by ID**: `GET /users/{id}`
+- **Update User**: `PUT /users` **(Admin only)**
+- **Delete User**: `DELETE /users/{id}` **(Admin only)**
+
+### 3. Rate Limiting
+
+- Requests per IP/token are limited (e.g., X requests per minute) to prevent abuse.
+
+### 4. Pagination
+
+- Supports pagination for `GET /users` with query parameters:
+  - `?page=1&limit=10`
+
+### 5. Input Validation
+
+- Validate required fields for:
+  - Registration: `username`, `email`, `password`
+  - Login: `email`, `password`
+  - Update: `username`, `email`, `is_admin`
+
+### 6. Testing
+
+- **Unit Tests**: Cover business logic and validation
+- **Integration Tests**: Test repository and service layers with real PostgreSQL
+- Transactions used to roll back test data for consistency
+
+---
+
+## 🛠 Third Libs I used
 
 - Postgres : `github.com/lib/pq`
 - crypto : `golang.org/x/crypto` -> to encrypt password
 - jwt : `github.com/dgrijalva/jwt-go` -> token for authorization
+
+---
 
 ## Endpoint
 
@@ -52,7 +107,7 @@ A simple project to learn basic Go integration with a PostgreSQL database
 - URL : `http://localhost:8080/api/v1/login`
 - Method: `POST`
 - Curl :
-  ```json
+  ```
   curl --location 'http://localhost:8080/api/v1/login' \
   --header 'Content-Type: application/json' \
   --data '{
@@ -117,62 +172,73 @@ A simple project to learn basic Go integration with a PostgreSQL database
 
 ### Get All Data User
 
-- URL : `http://localhost:8080/api/v1/users`
+- URL : `http://localhost:8080/api/v1/users?page=1&limit=5`
 - Method: `GET`
 - Curl :
   ```
-  curl --location 'http://localhost:8080/api/v1/users' \
+  curl --location 'http://localhost:8080/api/v1/users?page=1&limit=5' \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDIyODQ0MjEsImlhdCI6MTc0MjI4NDEyMSwic3ViIjoiMTA3In0.P_RE_SlczIeM75eplTtjuqp3m6JPWDBS3rZ3QHOkQWg'
   ```
 - Response
   ```json
   {
-    "message": "Successfully retrieved all users",
+    "message": "success",
     "status": "success",
     "code": 200,
     "data": [
       {
-        "userId": 106,
-        "username": "member4",
-        "email": "member4@gmail.com",
-        "password": "$2a$10$AtKc3o3YLLNjnp53pQyscO5ApFTujGOAvVdbj.NSAPItEPZGQCgzm",
-        "createdAt": "2025-03-15T15:45:04.808686Z",
-        "updateAt": "2025-03-15T15:45:04.808686Z"
+        "userId": 7,
+        "username": "test2",
+        "email": "test@gmail.com",
+        "password": "$2a$10$u/mLEbx8Jw6Pr6cZJPTO7uj2XT9KdZzya53o.QtqLUIu2rfTQERNK",
+        "isAdmin": false,
+        "createdAt": "2025-03-27T22:28:48.793494Z",
+        "updatedAt": "2025-03-27T22:28:48.793494Z"
       },
       {
-        "userId": 107,
-        "username": "member5",
-        "email": "member5@gmail.com",
-        "password": "$2a$10$uLKW0v7MQL/eMgpKY/F6jO8facIZ3lZILkWsuVrUaL.YCAfPmFZLa",
-        "createdAt": "2025-03-16T00:09:41.84453Z",
-        "updateAt": "2025-03-16T00:09:41.84453Z"
+        "userId": 6,
+        "username": "test",
+        "email": "xsxs@gmail.com",
+        "password": "$2a$10$s7xnHVlTC9HKPSDRXI/.KeY5kiz.HBWEWoydrxAn/7C9FFHvL2ZW.",
+        "isAdmin": false,
+        "createdAt": "2025-03-27T22:20:36.749706Z",
+        "updatedAt": "2025-03-27T22:20:36.749706Z"
       },
       {
-        "userId": 108,
-        "username": "member7",
-        "email": "member7@gmail.com",
-        "password": "$2a$10$5.X6F0tvzDwIsmq8Z3IdLeSkuLnPDNKAHyCXDl.Ub6Q03G9lG2v6C",
-        "createdAt": "2025-03-17T22:36:53.310911Z",
-        "updateAt": "2025-03-17T22:36:53.310911Z"
+        "userId": 5,
+        "username": "member28",
+        "email": "member89@gmail.com",
+        "password": "$2a$10$dzJUnISeyarGgeqmJcpLE.WaX3BCA5C5X4vPGxxpfXGAICnF4x.JC",
+        "isAdmin": false,
+        "createdAt": "2025-03-27T22:19:16.121715Z",
+        "updatedAt": "2025-03-27T22:19:16.121715Z"
       },
       {
-        "userId": 105,
-        "username": "member56",
-        "email": "member55@gmail.com",
-        "password": "$2a$10$XICAYsWjCrZkEsGF5atsmeqjT4tX0VZXNe2KkbB/xGK2r7sEiqj2O",
-        "createdAt": "2025-03-15T15:43:49.217183Z",
-        "updateAt": "2025-03-15T15:43:49.217183Z"
+        "userId": 4,
+        "username": "admin2",
+        "email": "admin2@gmail.com",
+        "password": "$2a$10$ZSQhI/HERpuGtNK4FG9ARu31hGM8bexjwv1hX/jl6zMXL.pyl53aW",
+        "isAdmin": true,
+        "createdAt": "2025-03-26T17:55:04.264575Z",
+        "updatedAt": "2025-03-26T17:55:04.264575Z"
       },
       {
-        "userId": 109,
-        "username": "member8",
-        "email": "member8@gmail.com",
-        "password": "$2a$10$Kgxg.4fWCoTawTvq85FTr..0fuP7hjvUQoympeoZ5Pd3azhLl33MO",
-        "createdAt": "2025-03-18T14:48:02.500906Z",
-        "updateAt": "2025-03-18T14:48:02.500906Z"
+        "userId": 3,
+        "username": "admin",
+        "email": "admin@gmail.com",
+        "password": "$2a$10$sxsIXreJqZe9XFtF7KgP/OS2Yh/.btmN/ijvY7GnNvgSeTY9CtQzu",
+        "isAdmin": false,
+        "createdAt": "2025-03-26T17:54:07.51333Z",
+        "updatedAt": "2025-03-26T17:54:07.51333Z"
       }
-    ]
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "limit": 5,
+      "totalItems": 5,
+      "totalPage": 1
+    }
   }
   ```
 
@@ -201,6 +267,8 @@ A simple project to learn basic Go integration with a PostgreSQL database
     }
   }
   ```
+
+---
 
 ## Command + SQL Queries
 
@@ -345,8 +413,10 @@ A simple project to learn basic Go integration with a PostgreSQL database
 
 ```
   example:
-    ALTER TABLE users ADD COLUMN isAdmin boolean default false;
+    ALTER TABLE users ADD COLUMN is_admin boolean default false;
 ```
+
+---
 
 ## Notes
 
